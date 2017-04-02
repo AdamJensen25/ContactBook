@@ -19,6 +19,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".ContactsProvider"
+            android:authorities="ua.vladprischepa.contactbooktesttask"
+            android:enabled="false"
+            android:exported="false">
+        </provider>
     </application>
 
 </manifest>

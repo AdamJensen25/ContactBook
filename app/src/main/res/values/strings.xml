@@ -5,4 +5,6 @@
     <string name="sign_out_message">You have signed out from your Google</string>
     <string name="sign_out_menu_item">Sign Out</string>
     <string name="sign_in_dialog_message">Signing In…</string>
+    <string name="error_row_insertion">"Unable to insert rows into: "</string>
+    <string name="error_unknown_uri">Unknown URI: </string>
 </resources>

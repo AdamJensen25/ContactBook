@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 /**
+ * A helper class to manage database creation and version management.
  * @author Vlad Prischepa
  * @since 02.04.2017
  * @version 1
@@ -32,6 +33,7 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
         super(context, account.getEmail()+DB_NAME_SUFFIX, null, DB_VERSION);
     }
 
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_TABLE_CONTACTS);
@@ -47,12 +49,18 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
         onCreate(db);
     }
 
+    /**
+     * SQL Statement for creating "Contacts" table
+     */
     private static final String SQL_CREATE_TABLE_CONTACTS = "CREATE TABLE IF NOT EXISTS"
             + ContactsContract.ContactsTableEntry.TABLE_NAME + "("
             + ContactsContract.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + ContactsContract.ContactsTableEntry.COLUMN_FIRST_NAME + " TEXT NOT NULL, "
             + ContactsContract.ContactsTableEntry.COLUMN_LAST_NAME + " TEXT NOT NULL" + ");";
 
+    /**
+     * SQL Statement for creating "Phones" table
+     */
     private static final String SQL_CREATE_TABLE_PHONES = "CREATE TABLE IF NOT EXISTS"
             + ContactsContract.PhonesTableEntry.TABLE_NAME + "("
             + ContactsContract.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -60,6 +68,10 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
             + ContactsContract.PhonesTableEntry.COLUMN_PHONE_NUMBER + " TEXT NOT NULL, "
             + ContactsContract.PhonesTableEntry.COLUMN_NUMBER_TYPE + " INTEGER NOT NULL DEFAULT 0"
             + ");";
+
+    /**
+     * SQL Statement for creating "Emails" table
+     */
     private static final String SQL_CREATE_TABLE_EMAILS = "CREATE TABLE IF NOT EXISTS"
             + ContactsContract.EmailTableEntry.TABLE_NAME + "("
             + ContactsContract.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -68,6 +80,9 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
             + ContactsContract.EmailTableEntry.COLUMN_EMAIL_TYPE + " INTEGER NOT NULL DEFAULT 0"
             + ");";
 
+    /**
+     * SQL Statement for deleting existing table
+     */
     private static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS ";
 
 }

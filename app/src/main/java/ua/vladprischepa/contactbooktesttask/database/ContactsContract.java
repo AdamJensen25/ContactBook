@@ -3,6 +3,8 @@ package ua.vladprischepa.contactbooktesttask.database;
 import android.provider.BaseColumns;
 
 /**
+ * Contract class for SQLite Database tables
+ *
  * @author Vlad Prischepa
  * @since 02.04.2017
  * @version 1
