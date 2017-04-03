@@ -73,7 +73,10 @@ public class ContactsProvider extends ContentProvider {
         sUriMatcher.addURI(CONTENT_AUTHORITY, PATH_EMAILS + "/#", EMAIL_ID);
     }
 
-    public ContactsProvider(GoogleSignInAccount account) {
+    public ContactsProvider(){
+    }
+
+    public ContactsProvider(String account) {
         mDbHelper = new ContactsDBHelper(getContext(), account);
     }
 

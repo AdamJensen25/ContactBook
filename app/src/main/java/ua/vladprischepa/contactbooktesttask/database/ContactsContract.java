@@ -29,15 +29,6 @@ public final class ContactsContract{
 
         public static final String COLUMN_PHONE_NUMBER = "number";
         public static final String COLUMN_NUMBER_TYPE = "type";
-
-        public static final int PHONE_TYPE_MOBILE = 0;
-        public static final int PHONE_TYPE_HOME = 1;
-        public static final int PHONE_TYPE_WORK = 2;
-        public static final int PHONE_TYPE_MAIN = 3;
-        public static final int PHONE_TYPE_WORK_FAX = 4;
-        public static final int PHONE_TYPE_HOME_FAX = 5;
-        public static final int PHONE_TYPE_PAGER = 6;
-        public static final int PHONE_TYPE_OTHER = 7;
     }
 
     public static final class EmailTableEntry{
@@ -45,10 +36,6 @@ public final class ContactsContract{
 
         public static final String COLUMN_EMAIL = "email";
         public static final String COLUMN_EMAIL_TYPE = "type";
-
-        public static final int EMAIL_TYPE_PERSONAL = 0;
-        public static final int EMAIL_TYPE_WORK = 1;
-        public static final int EMAIL_TYPE_OTHER = 2;
     }
 
 

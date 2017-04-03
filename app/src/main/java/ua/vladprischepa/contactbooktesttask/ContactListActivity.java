@@ -1,7 +1,9 @@
 package ua.vladprischepa.contactbooktesttask;
 
-import android.app.ProgressDialog;
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -12,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -28,11 +31,32 @@ import com.google.android.gms.common.api.Status;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ua.vladprischepa.contactbooktesttask.model.Contact;
 
 @SuppressWarnings("unused")
-public class ContactListActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class ContactListActivity extends AppCompatActivity
+        implements GoogleApiClient.OnConnectionFailedListener, LoaderManager.LoaderCallbacks<Cursor> {
 
+    /**
+     * Request code for {@link com.google.android.gms.auth.api.signin.GoogleSignInApi}
+     */
     private static final int SIGN_IN_REQUEST_CODE = 20;
+
+    /**
+     * Request codes for {@link ContactEditActivity}
+     */
+    public static final int FLAG_EDIT_TASK = 100;
+    public static final int FLAG_NEW_TASK = 101;
+
+    public static final String KEY_GOOGLE_ACCOUNT = "account";
+
+    /**
+     * Keys for intent arguments arguments
+     */
+    public static final String KEY_REQUEST_CODE = "requestCode";
+    public static final String KEY_CONTACT = "contact";
+
+    private GoogleSignInAccount mAccount;
 
     private GoogleApiClient mGoogleApiClient;
     @BindView(R.id.toolbar)
@@ -45,8 +69,9 @@ public class ContactListActivity extends AppCompatActivity implements GoogleApiC
     SignInButton mSignInButton;
     @BindView(R.id.recyclerContacts)
     RecyclerView mRecyclerContacts;
+    @BindView(R.id.progressBar)
+    ProgressBar mProgressBar;
     private MenuItem mSignOutMenuItem;
-    private ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +85,6 @@ public class ContactListActivity extends AppCompatActivity implements GoogleApiC
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
         mSignInButton.setSize(SignInButton.SIZE_STANDARD);
-
     }
     private void initGoogleApiClient(){
         GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(
@@ -80,6 +104,19 @@ public class ContactListActivity extends AppCompatActivity implements GoogleApiC
         startActivityForResult(signInIntent, SIGN_IN_REQUEST_CODE);
     }
 
+    @OnClick(R.id.fabAddContact)
+    void addNewContact(){
+        Intent editIntent = new Intent(
+                ContactListActivity.this, ContactEditActivity.class);
+        editIntent.putExtra(KEY_REQUEST_CODE, FLAG_NEW_TASK);
+        editIntent.putExtra(KEY_GOOGLE_ACCOUNT, mAccount.getEmail());
+        startActivityForResult(editIntent, FLAG_NEW_TASK);
+    }
+
+    private void editContact(@NonNull Contact contact){
+
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -90,9 +127,9 @@ public class ContactListActivity extends AppCompatActivity implements GoogleApiC
 
     private void handleSignInResult(GoogleSignInResult result){
         if (result.isSuccess()){
-            GoogleSignInAccount account = result.getSignInAccount();
+            mAccount = result.getSignInAccount();
             showSignInLayout(false);
-            Toast.makeText(this, "Welcome " + account.getDisplayName(),
+            Toast.makeText(this, "Welcome " + mAccount.getDisplayName(),
                     Toast.LENGTH_SHORT).show();
         } else {
             showSignInLayout(true);
@@ -120,11 +157,11 @@ public class ContactListActivity extends AppCompatActivity implements GoogleApiC
         if (optionalPendingResult.isDone()){
             handleSignInResult(optionalPendingResult.get());
         } else {
-            showProgressDialog(true);
+            showProgress(true);
             optionalPendingResult.setResultCallback(new ResultCallback<GoogleSignInResult>() {
                 @Override
                 public void onResult(GoogleSignInResult googleSignInResult) {
-                    showProgressDialog(false);
+                    showProgress(false);
                     handleSignInResult(googleSignInResult);
                 }
             });
@@ -168,17 +205,9 @@ public class ContactListActivity extends AppCompatActivity implements GoogleApiC
         return super.onOptionsItemSelected(item);
     }
 
-    private void showProgressDialog(boolean show){
-        if (show){
-            if (mProgressDialog == null){
-                mProgressDialog = new ProgressDialog(this);
-                mProgressDialog.setMessage(getString(R.string.sign_in_dialog_message));
-                mProgressDialog.setIndeterminate(true);
-            }
-            mProgressDialog.show();
-        } else if (mProgressDialog != null && mProgressDialog.isShowing()){
-            mProgressDialog.hide();
-        }
+    private void showProgress(boolean show){
+        mProgressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        showSignInLayout(show ? false : true);
     }
 
     @Override
@@ -190,5 +219,20 @@ public class ContactListActivity extends AppCompatActivity implements GoogleApiC
     protected void onStart() {
         super.onStart();
         silentSignIn();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

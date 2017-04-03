@@ -26,6 +26,12 @@
             android:enabled="false"
             android:exported="false">
         </provider>
+
+        <activity
+            android:name=".ContactEditActivity"
+            android:label="@string/title_activity_contact_edit"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

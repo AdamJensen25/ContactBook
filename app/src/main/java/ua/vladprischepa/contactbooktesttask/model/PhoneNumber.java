@@ -12,10 +12,10 @@ import android.os.Parcelable;
 public class PhoneNumber implements Parcelable{
 
     private final String mNumber;
-    private final int mType;
+    private final String mType;
     private final int mId;
 
-    public PhoneNumber(String number, int type, int id){
+    public PhoneNumber(String number, String type, int id){
         mNumber = number;
         mType = type;
         mId = id;
@@ -23,7 +23,7 @@ public class PhoneNumber implements Parcelable{
 
     protected PhoneNumber(Parcel in) {
         mNumber = in.readString();
-        mType = in.readInt();
+        mType = in.readString();
         mId = in.readInt();
     }
 
@@ -39,7 +39,7 @@ public class PhoneNumber implements Parcelable{
         }
     };
 
-    public int getType() {
+    public String getType() {
         return mType;
     }
 
@@ -66,7 +66,7 @@ public class PhoneNumber implements Parcelable{
     @Override
     public int hashCode() {
         int result = mNumber.hashCode();
-        result = 31 * result + mType;
+        result = 31 * result + mType.hashCode();
         result = 31 * result + mId;
         return result;
     }
@@ -81,7 +81,7 @@ public class PhoneNumber implements Parcelable{
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mNumber);
-        dest.writeInt(mType);
+        dest.writeString(mType);
         dest.writeInt(mId);
     }
 }

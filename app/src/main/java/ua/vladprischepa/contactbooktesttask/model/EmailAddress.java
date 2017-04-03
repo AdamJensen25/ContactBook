@@ -12,10 +12,10 @@ import android.os.Parcelable;
 
 public class EmailAddress implements Parcelable{
     private final String mEmail;
-    private final int mType;
+    private final String mType;
     private final int mId;
 
-    public EmailAddress(String email, int type, int id){
+    public EmailAddress(String email, String type, int id){
         mEmail = email;
         mType = type;
         mId = id;
@@ -23,7 +23,7 @@ public class EmailAddress implements Parcelable{
 
     protected EmailAddress(Parcel in) {
         mEmail = in.readString();
-        mType = in.readInt();
+        mType = in.readString();
         mId = in.readInt();
     }
 
@@ -39,7 +39,7 @@ public class EmailAddress implements Parcelable{
         }
     };
 
-    public int getType() {
+    public String getType() {
         return mType;
     }
 
@@ -59,7 +59,7 @@ public class EmailAddress implements Parcelable{
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mEmail);
-        dest.writeInt(mType);
+        dest.writeString(mType);
         dest.writeInt(mId);
     }
 
@@ -78,7 +78,7 @@ public class EmailAddress implements Parcelable{
     @Override
     public int hashCode() {
         int result = mEmail.hashCode();
-        result = 31 * result + mType;
+        result = 31 * result + mType.hashCode();
         result = 31 * result + mId;
         return result;
     }
