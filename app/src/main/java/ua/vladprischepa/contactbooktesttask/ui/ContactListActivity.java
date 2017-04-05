@@ -1,13 +1,17 @@
-package ua.vladprischepa.contactbooktesttask;
+package ua.vladprischepa.contactbooktesttask.ui;
 
 import android.app.LoaderManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -27,15 +31,22 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import ua.vladprischepa.contactbooktesttask.R;
+import ua.vladprischepa.contactbooktesttask.database.ContactsDao;
+import ua.vladprischepa.contactbooktesttask.utils.ContactsLoader;
 import ua.vladprischepa.contactbooktesttask.model.Contact;
+import ua.vladprischepa.contactbooktesttask.adapter.ContactListAdapter;
+
 
 @SuppressWarnings("unused")
 public class ContactListActivity extends AppCompatActivity
-        implements GoogleApiClient.OnConnectionFailedListener, LoaderManager.LoaderCallbacks<Cursor> {
+        implements GoogleApiClient.OnConnectionFailedListener,
+        LoaderManager.LoaderCallbacks<List<Contact>>, ContactListAdapter.OnItemClickListener {
 
     /**
      * Request code for {@link com.google.android.gms.auth.api.signin.GoogleSignInApi}
@@ -48,13 +59,12 @@ public class ContactListActivity extends AppCompatActivity
     public static final int FLAG_EDIT_TASK = 100;
     public static final int FLAG_NEW_TASK = 101;
 
-    public static final String KEY_GOOGLE_ACCOUNT = "account";
-
     /**
      * Keys for intent arguments arguments
      */
-    public static final String KEY_REQUEST_CODE = "requestCode";
+    public static final String KEY_FLAG = "flag";
     public static final String KEY_CONTACT = "contact";
+    public static final String KEY_GOOGLE_ACCOUNT = "account";
 
     private GoogleSignInAccount mAccount;
 
@@ -72,6 +82,45 @@ public class ContactListActivity extends AppCompatActivity
     @BindView(R.id.progressBar)
     ProgressBar mProgressBar;
     private MenuItem mSignOutMenuItem;
+    private MenuItem mSortOrderMenuItem;
+    private ContactListAdapter mAdapter;
+    private ActionMode mActionMode;
+
+    private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.menu_action_mode, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            mFabAddContact.setVisibility(View.GONE);
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()){
+                case R.id.delete:
+                    for (Contact contact : mAdapter.getSelectedItems()){
+                        ContactsDao dao = new ContactsDao(getApplicationContext(), mAccount.getEmail());
+                        dao.deleteContact(contact.getId());
+                    }
+                    mAdapter.clearSelection();
+                    getLoaderManager().getLoader(0).forceLoad();
+                    mode.finish();
+            }
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mActionMode = null;
+            mFabAddContact.setVisibility(View.VISIBLE);
+            mAdapter.clearSelection();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,12 +129,24 @@ public class ContactListActivity extends AppCompatActivity
         initViews();
     }
 
+    /**
+     * Initialize views
+     */
     private void initViews(){
         setContentView(R.layout.activity_contact_list);
         ButterKnife.bind(this);
         setSupportActionBar(mToolbar);
         mSignInButton.setSize(SignInButton.SIZE_STANDARD);
+        mAdapter = new ContactListAdapter(this, this);
+        mRecyclerContacts.setAdapter(mAdapter);
+        mRecyclerContacts.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerContacts.addItemDecoration(
+                new DividerItemDecoration(this, DividerItemDecoration.HORIZONTAL));
     }
+
+    /**
+     * Initializing GoogleApiClient for accessing to Google Account
+     */
     private void initGoogleApiClient(){
         GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(
                 GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -108,20 +169,30 @@ public class ContactListActivity extends AppCompatActivity
     void addNewContact(){
         Intent editIntent = new Intent(
                 ContactListActivity.this, ContactEditActivity.class);
-        editIntent.putExtra(KEY_REQUEST_CODE, FLAG_NEW_TASK);
+        editIntent.putExtra(KEY_FLAG, FLAG_NEW_TASK);
         editIntent.putExtra(KEY_GOOGLE_ACCOUNT, mAccount.getEmail());
         startActivityForResult(editIntent, FLAG_NEW_TASK);
     }
 
     private void editContact(@NonNull Contact contact){
-
+        Intent contactEditIntent = new Intent(this, ContactEditActivity.class);
+        contactEditIntent.putExtra(KEY_CONTACT, contact);
+        contactEditIntent.putExtra(KEY_FLAG, FLAG_EDIT_TASK);
+        contactEditIntent.putExtra(KEY_GOOGLE_ACCOUNT, mAccount.getEmail());
+        startActivityForResult(contactEditIntent, FLAG_EDIT_TASK);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SIGN_IN_REQUEST_CODE){
-            handleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+        switch (requestCode){
+            case SIGN_IN_REQUEST_CODE:
+                handleSignInResult(Auth.GoogleSignInApi.getSignInResultFromIntent(data));
+                break;
+        }
+        switch (resultCode){
+            case RESULT_OK:
+                getLoaderManager().getLoader(0).forceLoad();
         }
     }
 
@@ -129,12 +200,12 @@ public class ContactListActivity extends AppCompatActivity
         if (result.isSuccess()){
             mAccount = result.getSignInAccount();
             showSignInLayout(false);
-            Toast.makeText(this, "Welcome " + mAccount.getDisplayName(),
+            getLoaderManager().initLoader(0,null, this);
+            getLoaderManager().getLoader(0).forceLoad();
+            Toast.makeText(this, getString(R.string.welcome) + " " + mAccount.getDisplayName(),
                     Toast.LENGTH_SHORT).show();
         } else {
             showSignInLayout(true);
-            Toast.makeText(this, result.getStatus().getStatusMessage(),
-                    Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -143,11 +214,15 @@ public class ContactListActivity extends AppCompatActivity
             mSignInLayout.setVisibility(View.VISIBLE);
             mFabAddContact.setVisibility(View.GONE);
             if (mSignOutMenuItem != null) mSignOutMenuItem.setVisible(false);
+            if (mSortOrderMenuItem != null) mSortOrderMenuItem.setVisible(false);
+            mRecyclerContacts.setVisibility(View.GONE);
 
         } else {
             mSignInLayout.setVisibility(View.GONE);
             mFabAddContact.setVisibility(View.VISIBLE);
             if (mSignOutMenuItem != null) mSignOutMenuItem.setVisible(true);
+            if (mSortOrderMenuItem != null) mSortOrderMenuItem.setVisible(true);
+            mRecyclerContacts.setVisibility(View.VISIBLE);
         }
     }
 
@@ -180,10 +255,26 @@ public class ContactListActivity extends AppCompatActivity
                 });
     }
 
+    private void showSortOrderDialog(){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.sort_dialog_title));
+        builder.setSingleChoiceItems(R.array.sorting_array, mAdapter.getSortOrder(), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mAdapter.sortContacts(which);
+                        dialog.dismiss();
+                    }
+                }
+        );
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_contact_list, menu);
         mSignOutMenuItem = menu.findItem(R.id.sign_out);
+        mSortOrderMenuItem = menu.findItem(R.id.sort);
         return true;
     }
 
@@ -191,7 +282,11 @@ public class ContactListActivity extends AppCompatActivity
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (mSignInLayout.getVisibility() == View.VISIBLE){
             mSignOutMenuItem.setVisible(false);
-        } else mSignOutMenuItem.setVisible(true);
+            mSortOrderMenuItem.setVisible(false);
+        } else{
+            mSignOutMenuItem.setVisible(true);
+            mSortOrderMenuItem.setVisible(true);
+        }
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -201,6 +296,8 @@ public class ContactListActivity extends AppCompatActivity
         if (id == R.id.sign_out) {
             signOut();
             return true;
+        } else if (id == R.id.sort){
+            showSortOrderDialog();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -218,21 +315,54 @@ public class ContactListActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        silentSignIn();
+        if (mAccount == null){
+            silentSignIn();
+        }
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return null;
+    public Loader<List<Contact>> onCreateLoader(int id, Bundle args) {
+        return new ContactsLoader(this, mAccount.getEmail());
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+    public void onLoadFinished(Loader<List<Contact>> loader, List<Contact> data) {
+        mAdapter.updateDataSet(data);
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(Loader<List<Contact>> loader) {
+    }
+
+    @Override
+    public void onItemClick(Contact contact, int position) {
+        if (mActionMode == null){
+            editContact(contact);
+        } else {
+            mAdapter.toggleSelection(position);
+            mActionMode.setTitle(mAdapter.getSelectedItemsCount()
+                    + " " + getString(R.string.title_action_mode));
+        }
+    }
+
+    @Override
+    public void onItemLongClick(int position) {
+        ContactListActivity activity = ContactListActivity.this;
+        if (mActionMode == null){
+            mActionMode = activity.startSupportActionMode(mActionModeCallback);
+        }
+        mAdapter.toggleSelection(position);
+        mActionMode.setTitle(mAdapter.getSelectedItemsCount()
+                + " " + getString(R.string.title_action_mode));
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mActionMode != null){
+            mActionMode.finish();
+        } else {
+            super.onBackPressed();
+        }
 
     }
 }

@@ -8,10 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-
-import java.util.HashMap;
-
 import ua.vladprischepa.contactbooktesttask.R;
 import ua.vladprischepa.contactbooktesttask.model.Contact;
 import ua.vladprischepa.contactbooktesttask.model.EmailAddress;
@@ -38,7 +34,8 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
     /**
      * SQLite LEFT OUTER JOIN statement
      */
-    private static final String SQL_LEFT_OUTER_JOIN = " LEFT OUTER JOIN ";
+    private static final String SQL_LEFT_OUTER_JOIN = " CROSS JOIN ";
+    private static final String SQL_INNER_JOIN = " INNER JOIN ";
 
     /**
      * Application Context
@@ -65,9 +62,9 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(SQL_DROP_TABLE+ContactsContract.ContactsTableEntry.TABLE_NAME);
-        db.execSQL(SQL_DROP_TABLE+ContactsContract.PhonesTableEntry.TABLE_NAME);
-        db.execSQL(SQL_DROP_TABLE+ContactsContract.EmailTableEntry.TABLE_NAME);
+        db.execSQL(SQL_DROP_TABLE+ ContactsContract.Contacts.TABLE_NAME);
+        db.execSQL(SQL_DROP_TABLE+ ContactsContract.Phones.TABLE_NAME);
+        db.execSQL(SQL_DROP_TABLE+ ContactsContract.Emails.TABLE_NAME);
         onCreate(db);
     }
 
@@ -75,31 +72,31 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
      * SQL Statement for creating "Contacts" table
      */
     private static final String SQL_CREATE_TABLE_CONTACTS = "CREATE TABLE IF NOT EXISTS "
-            + ContactsContract.ContactsTableEntry.TABLE_NAME + "("
-            + ContactsContract.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + ContactsContract.ContactsTableEntry.COLUMN_FIRST_NAME + " TEXT NOT NULL, "
-            + ContactsContract.ContactsTableEntry.COLUMN_LAST_NAME + " TEXT NOT NULL" + ");";
+            + ContactsContract.Contacts.TABLE_NAME + "("
+            + ContactsContract.Contacts.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + ContactsContract.Contacts.COLUMN_FIRST_NAME + " TEXT NOT NULL, "
+            + ContactsContract.Contacts.COLUMN_LAST_NAME + " TEXT NOT NULL" + ");";
 
     /**
      * SQL Statement for creating "Phones" table
      */
     private static final String SQL_CREATE_TABLE_PHONES = "CREATE TABLE IF NOT EXISTS "
-            + ContactsContract.PhonesTableEntry.TABLE_NAME + "("
-            + ContactsContract.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + ContactsContract.COLUMN_CONTACT_ID + " INTEGER NOT NULL, "
-            + ContactsContract.PhonesTableEntry.COLUMN_PHONE_NUMBER + " TEXT NOT NULL, "
-            + ContactsContract.PhonesTableEntry.COLUMN_NUMBER_TYPE + " INTEGER NOT NULL DEFAULT 0"
+            + ContactsContract.Phones.TABLE_NAME + "("
+            + ContactsContract.Phones.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + ContactsContract.Phones.COLUMN_CONTACT_ID + " INTEGER NOT NULL, "
+            + ContactsContract.Phones.COLUMN_PHONE_NUMBER + " TEXT NOT NULL, "
+            + ContactsContract.Phones.COLUMN_NUMBER_TYPE + " INTEGER NOT NULL DEFAULT 0"
             + ");";
 
     /**
      * SQL Statement for creating "Emails" table
      */
     private static final String SQL_CREATE_TABLE_EMAILS = "CREATE TABLE IF NOT EXISTS "
-            + ContactsContract.EmailTableEntry.TABLE_NAME + "("
-            + ContactsContract.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + ContactsContract.COLUMN_CONTACT_ID + " INTEGER NOT NULL, "
-            + ContactsContract.EmailTableEntry.COLUMN_EMAIL + " TEXT NOT NULL, "
-            + ContactsContract.EmailTableEntry.COLUMN_EMAIL_TYPE + " INTEGER NOT NULL DEFAULT 0"
+            + ContactsContract.Emails.TABLE_NAME + "("
+            + ContactsContract.Emails.COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + ContactsContract.Emails.COLUMN_CONTACT_ID + " INTEGER NOT NULL, "
+            + ContactsContract.Emails.COLUMN_EMAIL + " TEXT NOT NULL, "
+            + ContactsContract.Emails.COLUMN_EMAIL_TYPE + " INTEGER NOT NULL DEFAULT 0"
             + ");";
 
     /**
@@ -107,78 +104,11 @@ public class ContactsDBHelper extends SQLiteOpenHelper{
      */
     private static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS ";
 
-    public long insertContact(Contact contact){
-        SQLiteDatabase database = getWritableDatabase();
-        ContentValues contactValues = new ContentValues();
-        contactValues.put(ContactsContract.ContactsTableEntry.COLUMN_FIRST_NAME, contact.getFirstName());
-        contactValues.put(ContactsContract.ContactsTableEntry.COLUMN_LAST_NAME, contact.getLastName());
-        long rowId = database.insert(ContactsContract.ContactsTableEntry.TABLE_NAME,
-                null, contactValues);
-        for (PhoneNumber number : contact.getPhoneNumbers()) {
-            ContentValues phoneValues = new ContentValues();
-            phoneValues.put(ContactsContract.PhonesTableEntry.COLUMN_PHONE_NUMBER, number.getNumber());
-            phoneValues.put(ContactsContract.PhonesTableEntry.COLUMN_NUMBER_TYPE, number.getType());
-            phoneValues.put(ContactsContract.COLUMN_CONTACT_ID, rowId);
-            database.insert(ContactsContract.PhonesTableEntry.TABLE_NAME,
-                    null, phoneValues);
-        }
-        for (EmailAddress emailAddress : contact.getEmails()) {
-            ContentValues emailValues = new ContentValues();
-            emailValues.put(ContactsContract.EmailTableEntry.COLUMN_EMAIL, emailAddress.getEmail());
-            emailValues.put(ContactsContract.EmailTableEntry.COLUMN_EMAIL_TYPE, emailAddress.getType());
-            emailValues.put(ContactsContract.COLUMN_CONTACT_ID, rowId);
-            database.insert(ContactsContract.EmailTableEntry.TABLE_NAME,
-                    null, emailValues);
-        }
-        if (rowId<0) throw new IllegalArgumentException(
-                mContext.getString(R.string.error_unknown_uri));
-        return rowId;
-    }
 
-    public int deleteContact(int contact_id){
-        SQLiteDatabase database = getWritableDatabase();
-        int deletedRows = database.delete(ContactsContract.ContactsTableEntry.TABLE_NAME,
-                ContactsContract.COLUMN_ID + " = ?",
-                new String[]{String.valueOf(contact_id)});
-        deletedRows += database.delete(ContactsContract.PhonesTableEntry.TABLE_NAME,
-                ContactsContract.COLUMN_CONTACT_ID + " = ?",
-                new String[]{String.valueOf(contact_id)});
-        deletedRows += database.delete(ContactsContract.EmailTableEntry.TABLE_NAME,
-                ContactsContract.COLUMN_CONTACT_ID + " = ?",
-                new String[]{String.valueOf(contact_id)});
-        return deletedRows;
-    }
 
-    public void getAllContactsQuery(){
-        SQLiteDatabase database = getReadableDatabase();
-        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        queryBuilder.setTables(ContactsContract.ContactsTableEntry.TABLE_NAME
-                + SQL_LEFT_OUTER_JOIN + ContactsContract.PhonesTableEntry.TABLE_NAME + " ON "
-                + ContactsContract.COLUMN_ID + " = " + ContactsContract.COLUMN_CONTACT_ID
-                + SQL_LEFT_OUTER_JOIN + ContactsContract.EmailTableEntry.TABLE_NAME + " ON "
-                + ContactsContract.COLUMN_ID + " = " + ContactsContract.COLUMN_CONTACT_ID);
-        Cursor cursor = queryBuilder.query(database, null, null,
-                null, null, null, null, null);
-        logCursor(cursor);
 
-    }
 
-    // вывод в лог данных из курсора
-    void logCursor(Cursor c) {
-        if (c != null) {
-            if (c.moveToFirst()) {
-                String str;
-                do {
-                    str = "";
-                    for (String cn : c.getColumnNames()) {
-                        str = str.concat(cn + " = " + c.getString(c.getColumnIndex(cn)) + "; ");
-                    }
-                    Log.d("Tag", str);
-                } while (c.moveToNext());
-            }
-        } else
-            Log.d("Tag", "Cursor is null");
-    }
+
 
 
 }

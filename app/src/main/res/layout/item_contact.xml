@@ -2,17 +2,22 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
-    android:paddingTop="@dimen/recycler_item_content_padding"
-    android:paddingBottom="@dimen/recycler_item_content_padding"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:paddingTop="@dimen/content_margin"
+    android:paddingBottom="@dimen/content_margin"
+    android:paddingLeft="@dimen/content_margin"
+    android:paddingRight="@dimen/content_margin">
+    android:elevation="2dp">
     <ImageView
         android:id="@+id/contactThumbnail"
         android:layout_width="@dimen/circle_image_view_size"
         android:layout_height="@dimen/circle_image_view_size"/>
-    <TextView
-        android:id="@+id/tvContactFullName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"/>
+        <TextView
+            android:layout_marginLeft="@dimen/content_margin"
+            android:textSize="@dimen/list_item_text_size"
+            android:id="@+id/tvContactFullName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"/>
 </LinearLayout>

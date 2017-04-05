@@ -2,6 +2,7 @@ package ua.vladprischepa.contactbooktesttask.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import java.util.List;
 
@@ -18,15 +19,6 @@ public class Contact implements Parcelable{
     private List<PhoneNumber> mPhoneNumbers;
     private List<EmailAddress> mEmails;
     private int mId;
-
-    public Contact(String firstName, String lastName,
-                    List<PhoneNumber> phoneNumbers, List<EmailAddress> emails, int id){
-        mFirstName = firstName;
-        mLastName = lastName;
-        mPhoneNumbers = phoneNumbers;
-        mEmails = emails;
-        mId = id;
-    }
 
     public Contact(){
     }
@@ -89,6 +81,14 @@ public class Contact implements Parcelable{
 
     public void setId(int id) {
         mId = id;
+    }
+
+    public String getFullName(){
+        if (! TextUtils.isEmpty(mLastName)){
+            return mLastName + " " + mFirstName;
+        } else {
+            return mFirstName;
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package ua.vladprischepa.contactbooktesttask;
+package ua.vladprischepa.contactbooktesttask.adapter;
 
 import java.util.List;
 

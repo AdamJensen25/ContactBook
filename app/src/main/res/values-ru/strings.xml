@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Контакты</string>
+    <string name="title_new_contact">Новый контакт</string>
+    <string name="title_edit_contact">Изменить контакт</string>
+    <string name="action_settings">Настройки</string>
+    <string name="sort_dialog_title">Сортировка</string>
+    <string name="ok">ОК</string>
+    <string name="menu_save">Сохранить</string>
+    <string name="menu_delete">Удалить</string>
+    <string name="welcome">Вы вошли как</string>
+    <string name="sign_in_text">Вы должны выполнить вход с помощью Google+ чтобы продолжить работу с приложением</string>
+    <string name="sign_out_message">Вы вышли из аккаунта Google</string>
+    <string name="sign_out_menu_item">Выйти</string>
+    <string name="sign_in_dialog_message">Авторизация…</string>
+    <string name="title_action_mode">выбрано</string>
+    <string name="error_row_insertion">\Unable to insert rows into: </string>
+    <string name="error_unknown_uri">"Unknown URI: "</string>
+    <string name="title_activity_contact_edit">ContactEditActivity</string>
+    <string name="prompt_first_name">Имя</string>
+    <string name="prompt_last_name">Фамилия</string>
+    <string name="prompt_email">Эл. почта</string>
+    <string name="prompt_phone_number">Телефон</string>
+    <string name="button_add_phone_number">+ Добавить телефон</string>
+    <string name="button_add_email">+ Добавить ел. почту</string>
+
+    <string-array name="phone_types_array">
+        <item>Мобильный</item>
+        <item>Домашний</item>
+        <item>Рабочий</item>
+        <item>Основной</item>
+        <item>Рабочий факс</item>
+        <item>Домашний факс</item>
+        <item>Пейджер</item>
+        <item>Другой</item>
+    </string-array>
+    <string-array name="email_types_array">
+        <item>Личный</item>
+        <item>Рабочий</item>
+        <item>Другой</item>
+    </string-array>
+    <string-array name="sorting_array">
+        <item>по имени &#8593;</item>
+        <item>по имени &#8595;</item>
+        <item>по колличеству полей &#8593;</item>
+        <item>по колличеству полей &#8595;</item>
+    </string-array>
+</resources>

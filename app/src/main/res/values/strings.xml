@@ -1,12 +1,19 @@
 <resources>
-    <string name="app_name">Contact Book Test Task</string>
+    <string name="app_name">Contact Book</string>
+    <string name="title_new_contact">Add new contact</string>
+    <string name="title_edit_contact">Edit contact</string>
     <string name="action_settings">Settings</string>
+    <string name="sort_dialog_title">Sorting</string>
+    <string name="ok">OK</string>
+    <string name="title_action_mode">selected</string>
+    <string name="welcome">Welcome </string>
     <string name="menu_save">Save</string>
+    <string name="menu_delete">Delete</string>
     <string name="sign_in_text">You have to Sign In with Google+ to continue working with application.</string>
-    <string name="sign_out_message">You have signed out from your Google</string>
+    <string name="sign_out_message">You have signed out from your Google Account</string>
     <string name="sign_out_menu_item">Sign Out</string>
     <string name="sign_in_dialog_message">Signing In…</string>
-    <string name="error_row_insertion">"Unable to insert rows into: "</string>
+    <string name="error_row_insertion">Unable to insert rows into: </string>
     <string name="error_unknown_uri">Unknown URI: </string>
     <string name="title_activity_contact_edit">ContactEditActivity</string>
     <string name="prompt_first_name">First name</string>
@@ -30,5 +37,11 @@
         <item>Personal</item>
         <item>Work</item>
         <item>Other</item>
+    </string-array>
+    <string-array name="sorting_array">
+        <item>by name &#8593;</item>
+        <item>by name &#8595;</item>
+        <item>by info count &#8593;</item>
+        <item>by info count &#8595;</item>
     </string-array>
 </resources>
